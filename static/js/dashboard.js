@@ -8,6 +8,7 @@
   const theme = document.getElementById('themeToggle');
   const search = document.getElementById('historySearch');
   const filter = document.getElementById('statusFilter');
+  const dateFilter = document.getElementById('dateFilter');
   function translate(language) {
     document.documentElement.lang = language;
     document.querySelectorAll('[data-i18n]').forEach(node => {
@@ -27,10 +28,16 @@
   theme.addEventListener('click', () => setTheme(!document.body.classList.contains('dark-theme')));
   function filterHistory() {
     const term = search.value.trim().toLowerCase();
+    const today = new Date();
+    const utcToday = today.toISOString().slice(0, 10);
     document.querySelectorAll('.history-item').forEach(row => {
-      row.hidden = !!((filter.value && row.dataset.status !== filter.value) || (term && !row.dataset.search.includes(term)));
+      const days = dateFilter.value === 'today' ? 1 : Number(dateFilter.value);
+      const cutoff = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() - days + 1)).toISOString().slice(0, 10);
+      const dateMismatch = dateFilter.value !== 'all' && (row.dataset.date < cutoff || row.dataset.date > utcToday);
+      row.hidden = !!(dateMismatch || (filter.value && row.dataset.status !== filter.value) || (term && !row.dataset.search.includes(term)));
     });
   }
   search?.addEventListener('input', filterHistory);
   filter?.addEventListener('change', filterHistory);
+  dateFilter?.addEventListener('change', filterHistory);
 })();
