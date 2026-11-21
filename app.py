@@ -318,6 +318,13 @@ def scan_report(scan_id):
     scan = dict(row)
     scan['counts'] = json.loads(scan['disease_counts'])
     scan['detections_list'] = json.loads(scan['detections'] or '[]')
+    scores = [float(item['confidence']) for item in scan['detections_list']
+              if isinstance(item.get('confidence'), (int, float))]
+    scan['average_confidence'] = round(sum(scores) / len(scores) * 100, 1) if scores else None
+    scan['object_count'] = sum(int(count) for count in scan['counts'].values())
+    scan['disease_count'] = sum(int(count) for name, count in scan['counts'].items()
+                                if name.strip().lower() not in ('healthy', 'background'))
+    scan['disease_details'] = get_disease_details(scan['counts'])
     return render_template('scan_report.html', scan=scan)
 
 @app.route('/favicon.ico')
