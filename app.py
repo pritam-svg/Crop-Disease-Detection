@@ -17,6 +17,10 @@ import os
 from werkzeug.utils import secure_filename
 import logging
 import time
+import csv
+import io
+from flask import Response, abort
+from scan_history import connect
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -119,7 +123,7 @@ def process_image(image_path):
         image = cv2.imread(image_path)
         if image is None:
             logger.error("Failed to load image")
-            return None, "Error: Could not load image", {}
+            return None, "Error: Could not load image", {}, None, []
 
         # Resize image for consistent processing
         target_width, target_height = 1280, 720
@@ -140,6 +144,11 @@ def process_image(image_path):
             logger.info(f"Detected diseases: {disease_counts}")
         else:
             logger.info("No diseases detected")
+
+        detection_records = [
+            {"class": results.names[int(class_id)], "confidence": round(float(confidence), 4)}
+            for class_id, confidence in zip(detections.class_id, detections.confidence)
+        ]
 
         # Assign colors to detections based on class names
         if len(detections) > 0:
@@ -256,19 +265,46 @@ def process_image(image_path):
         logger.info(f"Annotated image saved: {output_path}")
         logger.info(f"EigenCAM image saved: {xai_path}")
 
-        return output_path, None, disease_counts, xai_path
+        return output_path, None, disease_counts, xai_path, detection_records
 
 
     except Exception as e:
 
         logger.error(f"Error processing image: {e}")
 
-        return None, f"Error: {str(e)}", {}, None
+        return None, f"Error: {str(e)}", {}, None, []
 
 @app.route('/dashboard')
 def dashboard():
     """Read-only overview of loaded model capabilities."""
     return render_template('dashboard.html', model_classes=list(model.names.values()), analytics=get_dashboard_data())
+
+@app.route('/dashboard/export.csv')
+def export_scans():
+    """Export actual locally stored scan records as CSV."""
+    analytics = get_dashboard_data()
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['ID', 'Timestamp UTC', 'Status', 'Detected labels', 'Average confidence (%)', 'Image path'])
+    for scan in analytics['scans']:
+        writer.writerow([scan['id'], scan['scanned_at'], scan['health_status'],
+                         scan['detected'], scan['avg_confidence'] if scan['avg_confidence'] is not None else '',
+                         scan['image_path']])
+    return Response(output.getvalue(), mimetype='text/csv',
+                    headers={'Content-Disposition': 'attachment; filename=agrovision_scans.csv'})
+
+@app.route('/dashboard/report/<int:scan_id>')
+def scan_report(scan_id):
+    """Printable scan report, with browser Save as PDF support."""
+    import json
+    with connect() as db:
+        row = db.execute('SELECT * FROM scans WHERE id = ?', (scan_id,)).fetchone()
+    if row is None:
+        abort(404)
+    scan = dict(row)
+    scan['counts'] = json.loads(scan['disease_counts'])
+    scan['detections_list'] = json.loads(scan['detections'] or '[]')
+    return render_template('scan_report.html', scan=scan)
 
 @app.route('/favicon.ico')
 def favicon():
@@ -303,7 +339,7 @@ def upload_file():
                 logger.info(f"File uploaded: {filepath}")
 
                 # Process the image
-                output_path, processing_error, disease_counts, xai_path = process_image(filepath)
+                output_path, processing_error, disease_counts, xai_path, detection_records = process_image(filepath)
 
                 if processing_error:
                     error = processing_error
@@ -340,7 +376,7 @@ def upload_file():
 
                     try:
                         save_scan(f'uploads/{filename}', output_path, xai_path,
-                                  plant_health_status, disease_summary)
+                                  plant_health_status, disease_summary, detection_records)
                     except Exception:
                         logger.exception('Scan completed, but history could not be saved')
 
