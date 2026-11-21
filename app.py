@@ -402,7 +402,8 @@ def upload_file():
         xai_image=xai_image,
         disease_summary=disease_summary,
         disease_details=disease_details,
-        plant_health_status=plant_health_status
+        plant_health_status=plant_health_status,
+        model_class_count=len(model.names)
     )
 if __name__ == '__main__':
     # Disable Flask auto-reloading to prevent interruptions
