@@ -6,6 +6,8 @@ from pytorch_grad_cam import EigenCAM
 from pytorch_grad_cam.utils.image import show_cam_on_image
 
 from disease_knowledge import get_disease_details
+from scan_history import save_scan, get_dashboard_data
+from uuid import uuid4
 import cv2
 import supervision as sv
 from ultralytics import YOLO
@@ -194,7 +196,7 @@ def process_image(image_path):
             y_offset += 30
 
         # Save annotated detection image
-        timestamp = int(time.time())
+        timestamp = f'{int(time.time())}_{uuid4().hex[:8]}'
 
         output_filename = os.path.join(
             app.config['UPLOAD_FOLDER'],
@@ -266,7 +268,7 @@ def process_image(image_path):
 @app.route('/dashboard')
 def dashboard():
     """Read-only overview of loaded model capabilities."""
-    return render_template('dashboard.html', model_classes=list(model.names.values()))
+    return render_template('dashboard.html', model_classes=list(model.names.values()), analytics=get_dashboard_data())
 
 @app.route('/favicon.ico')
 def favicon():
@@ -295,7 +297,7 @@ def upload_file():
                 error = 'No selected file'
                 logger.error(error)
             elif file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
+                filename = f'{uuid4().hex}_{secure_filename(file.filename)}'
                 filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 file.save(filepath)
                 logger.info(f"File uploaded: {filepath}")
@@ -335,6 +337,12 @@ def upload_file():
 
                     # Get information about detected diseases
                     disease_details = get_disease_details(disease_summary)
+
+                    try:
+                        save_scan(f'uploads/{filename}', output_path, xai_path,
+                                  plant_health_status, disease_summary)
+                    except Exception:
+                        logger.exception('Scan completed, but history could not be saved')
 
     return render_template(
         "index.html",
