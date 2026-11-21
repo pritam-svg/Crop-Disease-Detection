@@ -33,7 +33,7 @@
     <main class="main-content">
       <header class="topbar">
         <div class="breadcrumb">Workspace <span>/</span> <strong>Rice disease detection</strong></div>
-        <div class="topbar-right"><label for="languageSelect" class="sr-only">Language</label><select id="languageSelect" aria-label="Language" style="border:1px solid #c8d9cb;border-radius:8px;padding:7px;background:white;color:#173b27"><option value="en">English</option><option value="bn">বাংলা</option><option value="hi">हिन्दी</option></select><span class="status-dot"></span><span>Detection system</span><span class="status-pill">Ready</span></div>
+        <div class="topbar-right"><label for="languageSelect" class="sr-only">Language</label><select id="languageSelect" aria-label="Language" style="border:1px solid #c8d9cb;border-radius:8px;padding:7px;background:white;color:#173b27"><option value="en">English</option><option value="bn">বাংলা</option><option value="hi">हिन्दी</option></select><span class="status-dot"></span><span data-i18n="system">Detection system</span><span class="status-pill" data-i18n="ready">Ready</span></div>
       </header>
 
       <section class="hero">
@@ -52,39 +52,39 @@
       </section>
 
       <section class="stats-row" aria-label="Model information">
-        <div class="stat-card"><div class="stat-icon green">⌁</div><div><div class="stat-value">{{ model_class_count }}</div><div class="stat-label">Detection classes</div></div></div>
-        <div class="stat-card"><div class="stat-icon lime">◎</div><div><div class="stat-value">YOLO</div><div class="stat-label">Detection engine</div></div></div>
-        <div class="stat-card"><div class="stat-icon amber">↗</div><div><div class="stat-value">AI</div><div class="stat-label">Image analysis</div></div></div>
+        <div class="stat-card"><div class="stat-icon green">⌁</div><div><div class="stat-value">{{ model_class_count }}</div><div class="stat-label" data-i18n="classes">Detection classes</div></div></div>
+        <div class="stat-card"><div class="stat-icon lime">◎</div><div><div class="stat-value">YOLO</div><div class="stat-label" data-i18n="engine">Detection engine</div></div></div>
+        <div class="stat-card"><div class="stat-icon amber">↗</div><div><div class="stat-value">AI</div><div class="stat-label" data-i18n="analysis">Image analysis</div></div></div>
         <div class="stat-card stat-note"><div class="stat-icon pale">✳</div><div><div class="stat-note-title">Simple, fast, visual</div><div class="stat-label">A first look at leaf health</div></div></div>
       </section>
 
       <section class="detector-section" id="detector">
         <div class="section-heading">
-          <div><div class="eyebrow">ANALYSIS WORKSPACE</div><h2>Rice leaf <em>detector</em></h2></div>
+          <div><div class="eyebrow">ANALYSIS WORKSPACE</div><h2><span data-i18n="leaf_detector">Rice leaf detector</span></h2></div>
           <span class="step-indicator"><span>01</span> / UPLOAD IMAGE</span>
         </div>
 
         <div class="workspace-grid">
           <div class="panel upload-panel">
-            <div class="panel-heading"><div><h3>Upload a leaf image</h3><p>Choose a clear photo of a rice leaf for analysis.</p></div><span class="panel-number">01</span></div>
+            <div class="panel-heading"><div><h3 data-i18n="upload">Upload a leaf image</h3><p>Choose a clear photo of a rice leaf for analysis.</p></div><span class="panel-number">01</span></div>
             <form action="/" method="POST" enctype="multipart/form-data" id="uploadForm">
               <label class="dropzone" id="dropzone" for="fileInput">
                 <input type="file" name="file" id="fileInput" accept=".png,.jpg,.jpeg,image/png,image/jpeg" required>
                 <div class="upload-symbol"><span>↑</span></div>
-                <strong id="dropTitle">Drop your image here</strong>
+                <strong id="dropTitle" data-i18n="drop">Drop your image here</strong>
                 <span class="drop-subtitle" id="dropSubtitle">or <u>browse files</u> from your device</span>
                 <span class="file-types">PNG, JPG or JPEG <i>·</i> Image files only</span>
                 <img id="previewImage" class="preview-image" alt="Selected rice leaf preview" hidden>
               </label>
               <div class="selected-file" id="selectedFile" hidden><span class="file-mini-icon">▧</span><span id="fileName">image.jpg</span><button type="button" id="removeFile" aria-label="Remove selected image">×</button></div>
-              <button class="primary-button" type="submit" id="submitButton"><span>Analyse leaf image</span><span class="button-arrow">↗</span></button>
+              <button class="primary-button" type="submit" id="submitButton"><span data-i18n="analyse">Analyse leaf image</span><span class="button-arrow">↗</span></button>
               <p class="privacy-note"><span>◇</span> Your image is used for detection by this application.</p>
             </form>
             {% if error %}<div class="alert error-alert" role="alert"><strong>Unable to process image</strong><span>{{ error }}</span></div>{% endif %}
           </div>
 
           <div class="panel result-panel" id="results">
-            <div class="panel-heading"><div><h3>Detection results</h3><p>AI-annotated image and class summary.</p></div><span class="panel-number">02</span></div>
+            <div class="panel-heading"><div><h3 data-i18n="results">Detection results</h3><p>AI-annotated image and class summary.</p></div><span class="panel-number">02</span></div>
 {% if output_image %}
 
   <div class="comparison-grid">
@@ -203,7 +203,7 @@
             </p>
 
             <div class="knowledge-block">
-                <h4>Symptoms</h4>
+                <h4 data-i18n="symptoms">Symptoms</h4>
                 <ul>
                     {% for symptom in disease.symptoms %}
                     <li>{{ symptom }}</li>
@@ -212,7 +212,7 @@
             </div>
 
             <div class="knowledge-block">
-                <h4>Prevention & Management</h4>
+                <h4 data-i18n="prevention">Prevention & Management</h4>
                 <ul>
                     {% for advice in disease.management %}
                     <li>{{ advice }}</li>
