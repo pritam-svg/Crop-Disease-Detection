@@ -65,4 +65,4 @@ def get_dashboard_data():
             "scans": scans, "total": total, "healthy": statuses["healthy"],
             "diseased": statuses["disease"], "inconclusive": statuses["inconclusive"],
             "healthy_pct": round(statuses["healthy"] / total * 100) if total else 0,
-            "diseases": diseases.most_common(), "trend": trend, "recent": scans[:12]}
+            "diseases": diseases.most_common(), "trend": trend, "recent": scans[:100]}
