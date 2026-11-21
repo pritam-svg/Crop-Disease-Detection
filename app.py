@@ -18,6 +18,7 @@ from werkzeug.utils import secure_filename
 import logging
 import time
 import csv
+import json
 import io
 from flask import Response, abort
 from scan_history import connect
@@ -277,7 +278,16 @@ def process_image(image_path):
 @app.route('/dashboard')
 def dashboard():
     """Read-only overview of loaded model capabilities."""
-    return render_template('dashboard.html', model_classes=list(model.names.values()), analytics=get_dashboard_data())
+    evaluation = None
+    evaluation_path = os.path.join(app.root_path, 'instance', 'model_evaluation.json')
+    if os.path.isfile(evaluation_path):
+        try:
+            with open(evaluation_path, encoding='utf-8') as handle:
+                evaluation = json.load(handle)
+        except (OSError, ValueError):
+            logger.exception('Could not load model evaluation metrics')
+    return render_template('dashboard.html', model_classes=list(model.names.values()),
+                           analytics=get_dashboard_data(), evaluation=evaluation)
 
 @app.route('/dashboard/knowledge')
 def disease_library():
