@@ -263,6 +263,11 @@ def process_image(image_path):
 
         return None, f"Error: {str(e)}", {}, None
 
+@app.route('/dashboard')
+def dashboard():
+    """Read-only overview of loaded model capabilities."""
+    return render_template('dashboard.html', model_classes=list(model.names.values()))
+
 @app.route('/favicon.ico')
 def favicon():
     """Serve a favicon to eliminate 404 errors."""
