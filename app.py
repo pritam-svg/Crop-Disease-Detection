@@ -5,7 +5,7 @@ matplotlib.use("Agg")
 from pytorch_grad_cam import EigenCAM
 from pytorch_grad_cam.utils.image import show_cam_on_image
 
-from disease_knowledge import get_disease_details
+from disease_knowledge import get_disease_details, DISEASE_KNOWLEDGE
 from scan_history import save_scan, get_dashboard_data
 from uuid import uuid4
 import cv2
@@ -278,6 +278,10 @@ def process_image(image_path):
 def dashboard():
     """Read-only overview of loaded model capabilities."""
     return render_template('dashboard.html', model_classes=list(model.names.values()), analytics=get_dashboard_data())
+
+@app.route('/dashboard/knowledge')
+def disease_library():
+    return render_template('disease_library.html', diseases=DISEASE_KNOWLEDGE)
 
 @app.route('/dashboard/export.csv')
 def export_scans():
